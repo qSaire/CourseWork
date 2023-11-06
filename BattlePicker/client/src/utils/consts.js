@@ -1,0 +1,8 @@
+export const ADMIN_ROUTE = '/admin'
+export const LOGIN_ROUTE = '/login'
+export const PRIVACY_ROUTE = '/privacy'
+export const REGISTRATION_ROUTE = '/registration'
+export const PLAY_ROUTE = '/play'
+export const PROFILE_ROUTE = '/profile'
+export const ACCOUNT_ROUTE = '/account'
+export const MAIN_ROUTE = '/'
