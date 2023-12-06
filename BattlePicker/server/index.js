@@ -11,6 +11,11 @@ const path = require('path')
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+const corsOptions ={
+    origin:PORT, 
+    credentials:true,
+    optionSuccessStatus:200
+}
 app.use(cors())
 app.use(express.json())
 app.use(express.static(path.resolve(__dirname, 'static')))
@@ -24,8 +29,7 @@ const start = async () => {
         await sequelize.authenticate();
         await sequelize.sync();
         app.listen(PORT, () => console.log('Server started on port', PORT));
-    } 
-    catch (e) {
+    } catch (e) {
         console.log(e)
     }
 }

@@ -1,9 +1,7 @@
-const ApiError = require('../error/ApiError');
+const ApiError = require('../error/ApiError.js');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const uuid = require('uuid')
-const path = require('path')
-const {User, Friend, FriendList} = require('../models/models')
+const User = require('../models/User.js')
 
 const generateJwt = (id, email, role) => {
     return jwt.sign(
@@ -16,61 +14,112 @@ const generateJwt = (id, email, role) => {
 class UserController {
     async registration(req, res, next) {
         const {email, nickname, password, role} = req.body
-        if (!email || !password || !nickname) {
-            return next(ApiError.badRequest('Некорректный email или пароль или никнейм'))
+        try {
+            if (!email || !password || !nickname) {
+                throw new Error('Пустой email, пароль или никнейм!')
+            }
+            const hash = await bcrypt.hash(password, 5)
+            const user = await User.create({email, nickname, password: hash, role})
+            const token = generateJwt(user.id, user.email, user.role)
+            return res.json({token})
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
         }
-        const candidate = await User.findOne({where: {email}})
-        if (candidate) {
-            return next(ApiError.badRequest('Пользователь с таким email уже существует'))
-        }
-        candidate = await User.findOne({where: {nickname}})
-        if (candidate) {
-            return next(ApiError.badRequest('Пользователь с таким никнеймом уже существует'))
-        }
-        const hashPassword = await bcrypt.hash(password, 5)
-        const user = await User.create({email, nickname, password: hashPassword, role, rating: 1500, avatar: "149071.png"})
-        const friendList = await FriendList.create({userId: user.id})
-        const token = generateJwt(user.id, user.email, user.role)
-        return res.json({token})
-    }
-
-    async edit(req, res, next) {
-        const {nickname, email, password, role, rating} = req.body
-        if (!email || !password) {
-            return next(ApiError.badRequest('Некорректный email или password'))
-        }
-        const candidate = await User.findOne({where: {email}})
-        if (candidate) {
-            return next(ApiError.badRequest('Пользователь с таким email уже существует'))
-        }
-        const hashPassword = await bcrypt.hash(password, 5)
-        const user = await User.create({email, role, password: hashPassword})
-        const token = generateJwt(user.id, user.email, user.role)
-        return res.json({token})
     }
 
     async login(req, res, next) {
-        const {email, password} = req.body
-        const user = await User.findOne({where: {email}})
-        if (!user) {
-            return next(ApiError.internal('Пользователь не найден'))
+        try {
+            const {email, password} = req.body
+            const user = await User.getByEmail(email)
+            let compare = bcrypt.compareSync(password, user.password)
+            if (!compare) {
+                throw new Error('Указан неверный пароль')
+            }
+            const token = generateJwt(user.id, user.email, user.role)
+            return res.json({token})
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
         }
-        let comparePassword = bcrypt.compareSync(password, user.password)
-        if (!comparePassword) {
-            return next(ApiError.internal('Указан неверный пароль'))
-        }
-        const token = generateJwt(user.id, user.email, user.role)
-        return res.json({token})
+    }
+    async addFriend(req, res, next)
+    {
+        const nickname = req.body
+        const friend = await User.getByNickname(nickname)
+
     }
 
     async check(req, res, next) {
-        const token = generateJwt(req.user.id, req.user.email, req.user.role)
+        const token = generateJwt(req.auth.id, req.auth.email, req.auth.role)
         return res.json({token})
     }
 
-    async getOne(req, res) {
-        const {id} = req.params
-        const user = await User.findOne({where: {id}})
+    async getAll(req, res, next) {
+        try {
+            const users = await User.getAll()
+            res.json(users)
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async getOne(req, res, next) {
+        try {
+            if (!req.params.id) {
+                throw new Error('Не указан id пользователя')
+            }
+            const user = await User.getOne(req.params.id)
+            res.json(user)
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async create(req, res, next) {
+        const {email, password, role = 'USER'} = req.body
+        try {
+            if (!email || !password) {
+                throw new Error('Пустой email или пароль')
+            }
+            if ( ! ['USER', 'ADMIN'].includes(role)) {
+                throw new Error('Недопустимое значение роли')
+            }
+            const hash = await bcrypt.hash(password, 5)
+            const user = await User.create({email, password: hash, role})
+            return res.json(user)
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async update(req, res, next) {
+        try {
+            if (!req.params.id) {
+                throw new Error('Не указан id пользователя')
+            }
+            if (Object.keys(req.body).length === 0) {
+                throw new Error('Нет данных для обновления')
+            }
+            let {email, password, role} = req.body
+            if (password) {
+                password = await bcrypt.hash(password, 5)
+            }
+            const user = await User.update(req.params.id, {email, nickname, password, role})
+            res.json(user)
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+
+    async delete(req, res, next) {
+        try {
+            if (!req.params.id) {
+                throw new Error('Не указан id пользователя')
+            }
+            const user = await User.delete(req.params.id)
+            res.json(user)
+        } catch(e) {
+            next(ApiError.badRequest(e.message))
+        }
     }
 }
 

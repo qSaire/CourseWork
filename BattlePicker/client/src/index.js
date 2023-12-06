@@ -4,7 +4,7 @@ import App from './App';
 import UserStore from "./store/UserStore";
 //import * as Scripts from './js/scripts.js';
 
-export const Context = createContext(null)
+export const Context = createContext()
 
 // const root = ReactDOM.createRoot(
 //   document.getElementById('root')

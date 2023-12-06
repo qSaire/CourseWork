@@ -1,9 +1,6 @@
-import React, {useContext, useState} from 'react';
-import {Container, Form} from "react-bootstrap";
-import Button from "react-bootstrap/Button";
-import Row from "react-bootstrap/Row";
+import React, {useContext} from 'react';
 import {NavLink, useLocation} from "react-router-dom";
-import {LOGIN_ROUTE, REGISTRATION_ROUTE, PLAY_ROUTE} from "../utils/consts";
+import {LOGIN_ROUTE, REGISTRATION_ROUTE, PLAY_ROUTE, ADMIN_ROUTE} from "../utils/consts";
 import {login, registration} from "../http/userAPI";
 import {observer} from "mobx-react-lite";
 import {Context} from "../index";
@@ -12,96 +9,91 @@ const Auth = observer(() => {
     const {user} = useContext(Context)
     const location = useLocation()
     const isLogin = location.pathname === LOGIN_ROUTE
-    const [email, setEmail] = useState('')
-    const [nickname, setNick] = useState('')
-    const [password, setPassword] = useState('')
 
 
-    const click = async () => {
-        try {
-            let data;
-            if (isLogin) {
-                data = await login(email, password);
-            } else {
-                data =  registration(email, nickname, password);
-            }
-            user.setUser(user)
-            user.setIsAuth(true)
-            //window.location.href = PLAY_ROUTE;
-        } catch (e) {
-            alert(e.response.data.message)
+    const click = async (event) => {
+
+        event.preventDefault()
+        const email = event.target.email.value.trim()
+        const password = event.target.password.value.trim()
+        let data
+        if (isLogin) {
+            data = await login(email, password)
+        }
+        else {
+            const nickname = event.target.nickname.value.trim()
+            data = await registration(email, nickname, password)
+        }
+        if (data) {
+            user.login(data)
+            if (user.isAdmin) window.location.href = ADMIN_ROUTE;
+            if (user.isAuth) window.location.href = PLAY_ROUTE;
         }
     }
 
     return (
-        <Container
+        <container
             className="auth"
             style={{height: window.innerHeight - 220}}
         >
             <h2>{isLogin ? "Авторизация" : "Регистрация"}</h2>
             {isLogin ?
-                <Form className='auth-form'>
-                    <div className="auth-input">
-                        <input className="auth-ctrl"
-                            name="email"
-                            type="text"
-                            placeholder="Введите email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                        />
-                        <input className="auth-ctrl"
-                            placeholder="Введите пароль"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            type="password"
-                        />
-                    </div>
-                    <Row className="auth-row">
+                <form className='auth-form auth-input' onSubmit={click}>
+                    <input
+                        name="email"
+                        className="auth-ctrl"
+                        placeholder="Введите email"
+                    />
+                    <input
+                        name="password"
+                        className="auth-ctrl"
+                        placeholder="Введите пароль"
+                        type="password"
+                    />
+                    <row className="auth-row">
                         <div>
-                            Нет аккаунта? <a class ="playmenu-btn"><NavLink to={REGISTRATION_ROUTE}>Зарегистрироваться.</NavLink></a>
+                            Нет аккаунта? <NavLink to={REGISTRATION_ROUTE} className ="playmenu-btn">Зарегистрироваться</NavLink>
                         </div>
-                        <Button className="auth-btn"
-                            variant={"outline-success"}
-                            onClick={click}
+                        <button 
+                            className="auth-btn"
+                            type="submit"
                         >
                             Войти
-                        </Button>
-                    </Row>
-                </Form>
+                        </button>
+                    </row>
+                </form>
                 :
-                <Form className='auth-form'>
-                    <div className="auth-input">
-                        <Form.Control className="auth-ctrl"
-                            placeholder="Введите email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                        />
-                        <Form.Control className="auth-ctrl"
-                            placeholder="Введите никнейм"
-                            value={nickname}
-                            onChange={e => setNick(e.target.value)}
-                        />
-                        <Form.Control className="auth-ctrl"
-                            placeholder="Введите пароль"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            type="password"
-                        />
-                    </div>
-                    <Row className="auth-row">
+                <form className='auth-form auth-input' onSubmit={click}>
+                    <input 
+                        name="email"
+                        className="auth-ctrl"
+                        placeholder="Введите email"
+                    />
+                    <input 
+                        name="nickname"
+                        className="auth-ctrl"
+                        placeholder="Введите никнейм"
+                    />
+                    <input 
+                        name="password"
+                        className="auth-ctrl"
+                        placeholder="Введите пароль"
+                        type="password"
+                    />
+                    <row className="auth-row">
                         <div>
-                            Есть аккаунт? <a class ="playmenu-btn"><NavLink to={LOGIN_ROUTE}>Войти.</NavLink></a>
+                            Есть аккаунт? <NavLink to={LOGIN_ROUTE} className ="playmenu-btn">Войти</NavLink>
                         </div>
-                        <Button className="auth-btn"
-                            variant={"outline-success"}
-                            onClick={click}
+                        <button 
+                            className="auth-btn"
+                            type="submit"
                         >
                             Зарегистрироваться
-                        </Button>
-                    </Row>
-                </Form>
+                        </button>
+                    </row>
+                </form>
             }
-        </Container>
+        </container>
     );
 });
 

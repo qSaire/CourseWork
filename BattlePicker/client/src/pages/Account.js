@@ -8,27 +8,27 @@ const Account = () => {
             <Helmet title="Личный кабинет - BattlePicker" />
             <NavBar />
             <form action="">
-                <section class="main">
-                    <div class="content">
-                        <h1 class="topic">Аккаунт</h1>
-                        <div class="account-info">
-                            <div class="block">
-                                <div class="title-data">Никнейм<br/><p class="data">Nickname</p></div>
-                                <div class="edit"><a href="" class="edit-btn">Изменить</a></div>
+                <section className="main">
+                    <div className="content">
+                        <h1 className="topic">Аккаунт</h1>
+                        <div className="account-info">
+                            <div className="block">
+                                <div className="title-data">Никнейм<br/><p className="data">Nickname</p></div>
+                                <div className="edit"><a href="" className="edit-btn">Изменить</a></div>
                             </div>
-                            <div class="block">
-                                <div class="title-data">Почта<br/><p class="data">unknown@gmail.com</p></div>
-                                <div class="edit"><a href="" class="edit-btn">Изменить</a></div>
+                            <div className="block">
+                                <div className="title-data">Почта<br/><p className="data">unknown@gmail.com</p></div>
+                                <div className="edit"><a href="" className="edit-btn">Изменить</a></div>
                             </div>
-                            <div class="block">
-                                <div class="title-data">Пароль<br/><p class="data">*********</p></div>
-                                <div class="edit"><a href="" class="edit-btn">Изменить</a></div>
+                            <div className="block">
+                                <div className="title-data">Пароль<br/><p className="data">*********</p></div>
+                                <div className="edit"><a href="" className="edit-btn">Изменить</a></div>
                             </div>
                         </div>
                     </div>
                 </section>
             </form>
-            <section class="line"></section>
+            <section className="line"></section>
         </div>
     );
 };
