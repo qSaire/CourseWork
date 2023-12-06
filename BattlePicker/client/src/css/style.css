@@ -530,3 +530,6 @@ a.fig:hover{
 @media (height < 180px){
     .header{ position: relative; }
 }
+@media (width < 570px){
+    .map-img{display: none;}
+}
